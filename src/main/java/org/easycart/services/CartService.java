@@ -1,42 +1,44 @@
 package main.java.org.easycart.services;
 
 import main.java.org.easycart.dm.CartItem;
-import main.java.org.easycart.dm.Product;
-
-import java.util.*;
+import main.java.org.easycart.dao.CartItemDao;
+import java.util.List;
 
 public class CartService {
-    private final Map<String, CartItem> cartItems;
+    private final CartItemDao cartItemDao;
 
-    public CartService() {
-        this.cartItems = new HashMap<>();
+    public CartService(CartItemDao cartItemDao) {
+        this.cartItemDao = cartItemDao;
     }
 
-    public void addToCart(Product product, int quantity) {
-        String id = product.getId();
-        if (cartItems.containsKey(id)) {
-            CartItem existing = cartItems.get(id);
-            existing.setQuantity(existing.getQuantity() + quantity);
+    public void addCartItem(CartItem cartItem) {
+        // אם כבר יש CartItem עם אותו id, עדכן את הכמות
+        CartItem existing = cartItemDao.getCartItemById(cartItem.getId());
+        if (existing != null) {
+            existing.setQuantity(existing.getQuantity() + cartItem.getQuantity());
+            cartItemDao.updateCartItem(existing);
         } else {
-            cartItems.put(id, new CartItem(product, quantity));
+            cartItemDao.addCartItem(cartItem);
         }
     }
 
-    public void removeFromCart(String productId) {
-        cartItems.remove(productId);
+    public void deleteCartItem(String id) {
+        cartItemDao.deleteCartItem(id);
     }
 
-    public List<CartItem> getAllItems() {
-        return new ArrayList<>(cartItems.values());
+    public List<CartItem> getAllCartItems() {
+        return cartItemDao.getAllCartItems();
     }
 
     public double calculateTotal() {
-        return cartItems.values().stream()
+        return cartItemDao.getAllCartItems().stream()
                 .mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity())
                 .sum();
     }
 
     public void clearCart() {
-        cartItems.clear();
+        for (CartItem item : cartItemDao.getAllCartItems()) {
+            cartItemDao.deleteCartItem(item.getId());
+        }
     }
 }

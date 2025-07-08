@@ -1,36 +1,33 @@
 package main.java.org.easycart.services;
 
 import main.java.org.easycart.dm.Product;
-import main.java.org.easycart.dm.User;
-
-import java.util.ArrayList;
+import main.java.org.easycart.dao.ProductDao;
 import java.util.List;
 
 public class ProductService {
+    private final ProductDao productDao;
 
-    private List<Product> products;
-
-    public ProductService(List<Product> products) {
-        this.products = products;
+    public ProductService(ProductDao productDao) {
+        this.productDao = productDao;
     }
 
-    public void addProduct(Product product, User user) {
-        if (!user.isAdmin()) {
-            throw new SecurityException("Only admins can add products");
-        }
-        products.add(product);
+    public void addProduct(Product product) {
+        productDao.addProduct(product);
     }
 
     public Product getProductById(String id) {
-        for (Product p : products) {
-            if (p.getId().equals(id)) {
-                return p;
-            }
-        }
-        return null;
+        return productDao.getProductById(id);
     }
 
     public List<Product> getAllProducts() {
-        return products;
+        return productDao.getAllProducts();
+    }
+
+    public void updateProduct(Product product) {
+        productDao.updateProduct(product);
+    }
+
+    public void deleteProduct(String id) {
+        productDao.deleteProduct(id);
     }
 }
